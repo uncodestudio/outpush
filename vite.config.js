@@ -10,7 +10,7 @@ export default defineConfig({
   build: {
     target: 'es2015',
     outDir: 'dist',
-    minify: 'terser',
+    minify: 'esbuild',
     rollupOptions: {
       input: 'main.js',
       output: {
@@ -18,16 +18,10 @@ export default defineConfig({
         assetFileNames: '[name].[ext]',
         format: 'es'
       }
-    },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      },
-      mangle: true,
-      format: {
-        comments: false
-      }
     }
+  },
+  
+  esbuild: {
+    drop: ['console', 'debugger'] // Supprime console.log en prod
   }
 })
