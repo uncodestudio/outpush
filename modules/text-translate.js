@@ -1,4 +1,4 @@
-// Module Horizontal Slide Animation - Fix définitif lazy loading
+// Module Horizontal Slide Animation - Version batch (comme text-reveal)
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
@@ -18,61 +18,62 @@ export function init() {
   // Position initiale
   gsap.set(layout, { x: 0, force3D: true })
 
-  // Fonction pour créer l'animation quand tout est stabilisé
-  const createScrollTrigger = () => {
-    // Attendre que la page soit stable
-    setTimeout(() => {
-      const wrapperWidth = wrapper.offsetWidth
-      const layoutWidth = layout.offsetWidth
-      const slideDistance = Math.max(0, layoutWidth - wrapperWidth)
-      
-      console.log(`📏 Animation créée - Distance: ${slideDistance}px`)
-      
-      // Supprimer ancien ScrollTrigger s'il existe
-      ScrollTrigger.getById("horizontal-slide")?.kill()
-      
-      // Créer nouveau ScrollTrigger avec positions correctes
-      ScrollTrigger.create({
-        trigger: wrapper,
-        start: "bottom bottom",
-        end: "top 10%",
-        scrub: 1,
-        markers: false, // Pour debug
-        id: "horizontal-slide",
-        onUpdate: (self) => {
-          const progress = self.progress
-          const currentX = -progress * slideDistance
-          
-          gsap.set(layout, { 
-            x: currentX, 
-            force3D: true 
-          })
-        }
-      })
-    }, 500) // Délai plus long pour stabilisation
-  }
+  // Utiliser ScrollTrigger.batch comme le text-reveal qui marche
+  ScrollTrigger.batch('.home-with-us_content-wrapper', {
+    onEnter: (elements) => {
+      // Même délai que text-reveal qui marche
+      setTimeout(() => {
+        elements.forEach((element) => {
+          setupHorizontalAnimation(element)
+        })
+      }, 500) // Même délai que text-reveal
+    },
+    start: "top 80%", // Même trigger que text-reveal
+    once: true
+  })
+}
 
-  // Intersection Observer pour détecter quand la section arrive
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
-        console.log('🎯 Section visible, création ScrollTrigger...')
-        createScrollTrigger()
-        observer.disconnect() // Une seule création
+function setupHorizontalAnimation(wrapper) {
+  // Vérifier que l'animation n'a pas déjà été créée
+  if (wrapper.classList.contains('horizontal-animated')) {
+    return
+  }
+  
+  wrapper.classList.add('horizontal-animated')
+  
+  const layout = wrapper.querySelector('.home-with-us_content-layout')
+  if (!layout) return
+  
+  // Délai supplémentaire comme text-reveal
+  setTimeout(() => {
+    const wrapperWidth = wrapper.offsetWidth
+    const layoutWidth = layout.offsetWidth
+    const slideDistance = Math.max(0, layoutWidth - wrapperWidth)
+    
+    console.log(`📏 Animation créée - Distance: ${slideDistance}px`)
+    
+    // Supprimer ancien ScrollTrigger s'il existe
+    ScrollTrigger.getById("horizontal-slide")?.kill()
+    
+    // Créer ScrollTrigger
+    ScrollTrigger.create({
+      trigger: wrapper,
+      start: "bottom bottom",
+      end: "top 10%",
+      scrub: 1,
+      markers: false,
+      id: `horizontal-slide-${Date.now()}`, // ID unique comme text-reveal
+      refreshPriority: -1,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const progress = self.progress
+        const currentX = -progress * slideDistance
+        
+        gsap.set(layout, { 
+          x: currentX, 
+          force3D: true 
+        })
       }
     })
-  }, {
-    rootMargin: '200px 0px' // Détecter 200px avant
-  })
-
-  observer.observe(wrapper)
-
-  // Fallback + resize
-  let resizeTimeout
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout)
-    resizeTimeout = setTimeout(() => {
-      createScrollTrigger()
-    }, 300)
-  })
+  }, 200) // Même délai que text-reveal
 }
