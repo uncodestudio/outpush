@@ -1,4 +1,4 @@
-// Module Text Reveal Animation - Solution finale mobile
+// Module Text Reveal Animation - Solution finale mobile + no flash
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
@@ -13,6 +13,11 @@ export function init() {
   }
 
   console.log('✅ Text Reveal Animation initialisé')
+
+  // ✨ CACHER LE TEXTE IMMÉDIATEMENT pour éviter le flash
+  textElements.forEach(element => {
+    gsap.set(element, { opacity: 0.2 })
+  })
 
   // Utiliser ScrollTrigger.batch pour gérer plusieurs éléments
   ScrollTrigger.batch('.home-with-us_h2', {
@@ -61,8 +66,10 @@ function setupTextAnimation(element) {
     letters = element.querySelectorAll('.letter')
   }
   
-  // État initial
+  // État initial des lettres (après split)
   gsap.set(letters, { opacity: 0.2 })
+  // Remettre l'élément parent visible maintenant qu'il est splitté
+  gsap.set(element, { opacity: 1 })
   
   // ScrollTrigger avec un délai supplémentaire
   setTimeout(() => {
