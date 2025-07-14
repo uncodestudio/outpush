@@ -8,23 +8,25 @@ export default defineConfig({
   },
   
   build: {
+    target: 'es2015',
     outDir: 'dist',
     minify: 'terser',
-    terserOptions: {           
-      compress: {               
-        drop_console: true,     
-        drop_debugger: true
+    rollupOptions: {
+      input: 'main.js',
+      output: {
+        entryFileNames: 'main.js',
+        assetFileNames: '[name].[ext]',
+        format: 'es'
       }
     },
-    lib: {
-      entry: 'main.js',
-      name: 'WebflowApp',
-      fileName: 'main',
-      formats: ['es']
-    },
-    rollupOptions: {
-      output: {
-        entryFileNames: 'main.js'
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      },
+      mangle: true,
+      format: {
+        comments: false
       }
     }
   }
