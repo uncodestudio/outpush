@@ -33,7 +33,7 @@ export function init() {
           gap: '1rem'
         },
         767: {               // Mobile
-          perPage: 1,
+          perPage: 1.2,
           gap: '0.5rem'
         }
       },

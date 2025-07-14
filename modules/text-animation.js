@@ -1,14 +1,8 @@
-// Module Text Reveal Animation - Avec SplitText GSAP
+// Module Text Reveal Animation - Solution finale mobile
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
     return
-  }
-
-  // Vérifier SplitText (plugin GSAP)
-  if (typeof SplitText === 'undefined') {
-    console.log('⚠ SplitText GSAP manquant - utilisation du split manuel')
-    return initWithManualSplit()
   }
 
   const textElements = document.querySelectorAll('.home-with-us_h2')
@@ -18,76 +12,75 @@ export function init() {
     return
   }
 
-  console.log('✅ Text Reveal Animation initialisé (SplitText)')
+  console.log('✅ Text Reveal Animation initialisé')
 
-  textElements.forEach(element => {
-    setupTextRevealGSAP(element)
-  })
-}
-
-function setupTextRevealGSAP(element) {
-  // SplitText GSAP - bien plus propre
-  const splitText = new SplitText(element, {
-    type: "chars", // Split par caractères
-    charsClass: "letter" // Classe pour chaque lettre
-  })
-  
-  const letters = splitText.chars
-  
-  // État initial : texte en opacity 0.2
-  gsap.set(letters, { opacity: 0.2 })
-  
-  // Animation ScrollTrigger
-  ScrollTrigger.create({
-    trigger: element,
-    start: "bottom bottom",
-    end: "top center",
-    scrub: 1,
-    markers: false,
-    id: "text-reveal",
-    onUpdate: (self) => {
-      const progress = self.progress
-      const totalLetters = letters.length
-      const visibleLetters = Math.floor(progress * totalLetters)
-      
-      // Animation optimisée avec GSAP
-      letters.forEach((letter, index) => {
-        gsap.to(letter, { 
-          opacity: index <= visibleLetters ? 1 : 0.2,
-          duration: 0.1,
-          ease: "none"
+  // Utiliser ScrollTrigger.batch pour gérer plusieurs éléments
+  ScrollTrigger.batch('.home-with-us_h2', {
+    onEnter: (elements) => {
+      // Délai pour laisser le temps au layout de se stabiliser
+      setTimeout(() => {
+        elements.forEach((element, index) => {
+          // Délai échelonné pour éviter les conflits
+          setTimeout(() => {
+            setupTextAnimation(element)
+          }, index * 100)
         })
-      })
-    }
+      }, 500) // Délai plus important pour mobile
+    },
+    start: "top 80%", // Plus tôt pour compenser le délai
+    once: true // Une seule fois
   })
 }
 
-// Fallback si SplitText pas disponible
-function initWithManualSplit() {
-  const textElements = document.querySelectorAll('.home-with-us_h2')
+function setupTextAnimation(element) {
+  // Vérifier que l'élément n'a pas déjà été traité
+  if (element.classList.contains('text-animated')) {
+    return
+  }
   
-  textElements.forEach(element => {
+  element.classList.add('text-animated')
+  
+  // Fonction de split selon disponibilité
+  let letters
+  
+  if (typeof SplitText !== 'undefined') {
+    const splitText = new SplitText(element, {
+      type: "chars",
+      charsClass: "letter"
+    })
+    letters = splitText.chars
+  } else {
+    // Split manuel
     const originalText = element.textContent
-    const letters = originalText.split('').map(char => {
+    const lettersHTML = originalText.split('').map(char => {
       if (char === ' ') return '<span class="letter">&nbsp;</span>'
       return `<span class="letter">${char}</span>`
     })
     
-    element.innerHTML = letters.join('')
-    const letterElements = element.querySelectorAll('.letter')
-    gsap.set(letterElements, { opacity: 0.2 })
-    
+    element.innerHTML = lettersHTML.join('')
+    letters = element.querySelectorAll('.letter')
+  }
+  
+  // État initial
+  gsap.set(letters, { opacity: 0.2 })
+  
+  // ScrollTrigger avec un délai supplémentaire
+  setTimeout(() => {
     ScrollTrigger.create({
       trigger: element,
       start: "bottom bottom",
-      end: "top center", 
+      end: "top center",
       scrub: 1,
       markers: false,
+      id: `text-reveal-${Date.now()}-${Math.random()}`,
+      refreshPriority: -1,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         const progress = self.progress
-        const visibleLetters = Math.floor(progress * letterElements.length)
+        const totalLetters = letters.length
+        const visibleLetters = Math.floor(progress * totalLetters)
         
-        letterElements.forEach((letter, index) => {
+        letters.forEach((letter, index) => {
           gsap.to(letter, { 
             opacity: index <= visibleLetters ? 1 : 0.2,
             duration: 0.1,
@@ -96,5 +89,5 @@ function initWithManualSplit() {
         })
       }
     })
-  })
+  }, 200) // Délai avant création ScrollTrigger
 }

@@ -1,7 +1,13 @@
-// Module Product Features - Avec navigation par ancres
+// Module Product Features - Avec navigation par ancres + responsive
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
+    return
+  }
+
+  // Condition responsive - pas d'animation sur mobile/tablette
+  if (window.innerWidth < 992) {
+    console.log('📱 Product Features - Animation désactivée sur mobile/tablette')
     return
   }
 
@@ -218,6 +224,18 @@ export function init() {
   
   // Vérifier l'ancre initiale
   checkInitialHash()
+
+  // Nettoyage au resize si on passe sous 992px
+  let resizeTimeout
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      if (window.innerWidth < 992) {
+        scrollTriggerInstance?.kill()
+        console.log('🔄 Product Features - Animation supprimée (écran trop petit)')
+      }
+    }, 250)
+  })
 
   // 🎯 EXPOSER LA FONCTION NAVIGATE GLOBALEMENT (optionnel)
   window.navigateToProductFeature = navigateToSection

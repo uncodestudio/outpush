@@ -1,4 +1,4 @@
-// Module Horizontal Slide Animation
+// Module Horizontal Slide Animation - Fix définitif lazy loading
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
@@ -15,46 +15,64 @@ export function init() {
 
   console.log('✅ Horizontal Slide Animation initialisé')
 
-  // Calculer la distance de slide nécessaire
-  const wrapperWidth = wrapper.offsetWidth
-  const layoutWidth = layout.offsetWidth
-  const slideDistance = layoutWidth - wrapperWidth
+  // Position initiale
+  gsap.set(layout, { x: 0, force3D: true })
 
-  console.log(`📏 Wrapper: ${wrapperWidth}px, Layout: ${layoutWidth}px, Distance: ${slideDistance}px`)
+  // Fonction pour créer l'animation quand tout est stabilisé
+  const createScrollTrigger = () => {
+    // Attendre que la page soit stable
+    setTimeout(() => {
+      const wrapperWidth = wrapper.offsetWidth
+      const layoutWidth = layout.offsetWidth
+      const slideDistance = Math.max(0, layoutWidth - wrapperWidth)
+      
+      console.log(`📏 Animation créée - Distance: ${slideDistance}px`)
+      
+      // Supprimer ancien ScrollTrigger s'il existe
+      ScrollTrigger.getById("horizontal-slide")?.kill()
+      
+      // Créer nouveau ScrollTrigger avec positions correctes
+      ScrollTrigger.create({
+        trigger: wrapper,
+        start: "bottom bottom",
+        end: "top 10%",
+        scrub: 1,
+        markers: false, // Pour debug
+        id: "horizontal-slide",
+        onUpdate: (self) => {
+          const progress = self.progress
+          const currentX = -progress * slideDistance
+          
+          gsap.set(layout, { 
+            x: currentX, 
+            force3D: true 
+          })
+        }
+      })
+    }, 500) // Délai plus long pour stabilisation
+  }
 
-  // Position initiale : layout aligné à gauche du wrapper
-  gsap.set(layout, { x: 0 })
-
-  // Animation ScrollTrigger
-  ScrollTrigger.create({
-    trigger: wrapper,
-    start: "bottom bottom", // Animation commence quand bottom screen atteint bottom wrapper
-    end: "top 10%",         // Animation finit quand top wrapper atteint 90% du screen (= 10% du top)
-    scrub: 1,
-    markers: false, // Debug
-    id: "horizontal-slide",
-    onUpdate: (self) => {
-      const progress = self.progress
-      
-      // Calculer la position x selon le progress
-      const currentX = -progress * slideDistance
-      
-      // Appliquer la transformation
-      gsap.set(layout, { x: currentX })
-      
-      console.log(`Progress: ${Math.round(progress * 100)}%, X: ${Math.round(currentX)}px`)
-    }
+  // Intersection Observer pour détecter quand la section arrive
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
+        console.log('🎯 Section visible, création ScrollTrigger...')
+        createScrollTrigger()
+        observer.disconnect() // Une seule création
+      }
+    })
+  }, {
+    rootMargin: '200px 0px' // Détecter 200px avant
   })
 
-  // Recalculer si la fenêtre change de taille
+  observer.observe(wrapper)
+
+  // Fallback + resize
+  let resizeTimeout
   window.addEventListener('resize', () => {
-    const newWrapperWidth = wrapper.offsetWidth
-    const newLayoutWidth = layout.offsetWidth
-    const newSlideDistance = newLayoutWidth - newWrapperWidth
-    
-    console.log(`📏 Resize - Nouvelle distance: ${newSlideDistance}px`)
-    
-    // Refresh ScrollTrigger pour recalculer
-    ScrollTrigger.refresh()
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      createScrollTrigger()
+    }, 300)
   })
 }
