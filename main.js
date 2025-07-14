@@ -13,12 +13,6 @@ import { init as articlesSplideInit } from './modules/splide-other-articles.js'
 
 
 
-
-
-
-
-
-
 // Helper pour les logs (supprimés en production)
 const log = import.meta.env.DEV ? console.log : () => {}
 const warn = import.meta.env.DEV ? console.warn : () => {}

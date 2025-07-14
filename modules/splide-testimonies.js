@@ -1,7 +1,6 @@
-// Module Splide Slider - Témoignages
 export function init() {
-  // Vérifier que Splide est disponible
-  if (typeof Splide === 'undefined') {
+  // Vérifier que Splide est disponible globalement
+  if (typeof window.Splide === 'undefined') {
     console.error('❌ Splide non trouvé - Ajouter le script Splide')
     return
   }
@@ -16,7 +15,7 @@ export function init() {
   console.log('✅ Splide Testimonial Slider initialisé')
 
   testimonialSliders.forEach(slider => {
-    new Splide(slider, {
+    new window.Splide(slider, {
       // Configuration témoignages
       type: 'loop',           // Loop infini
       perPage: 3,            // 3 témoignages visibles
