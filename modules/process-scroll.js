@@ -1,7 +1,13 @@
-// Module Process Scroll Animation - ULTRA optimisé
+// Module Process Scroll Animation - ULTRA optimisé + Responsive
 export function init() {
   if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
     console.log('⚠ GSAP ou ScrollTrigger manquant')
+    return
+  }
+
+  // Condition responsive - pas d'animation sur mobile/tablette
+  if (window.innerWidth < 992) {
+    console.log('📱 Animation désactivée sur mobile/tablette')
     return
   }
 
@@ -82,5 +88,17 @@ export function init() {
         updateOpacity(newStep)
       }
     }
+  })
+
+  // Nettoyage au resize si on passe sous 992px
+  let resizeTimeout
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout)
+    resizeTimeout = setTimeout(() => {
+      if (window.innerWidth < 992) {
+        ScrollTrigger.getById("process-scroll")?.kill()
+        console.log('🔄 Animation supprimée - écran trop petit')
+      }
+    }, 250)
   })
 }
