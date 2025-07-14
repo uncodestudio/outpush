@@ -1,3 +1,8 @@
+console.log('🔍 DEBUT SCRIPT - Splide:', typeof window.Splide)
+
+// Sauvegarder Splide au cas où
+const originalSplide = window.Splide
+
 import { pages } from './config.js'
 
 // Import direct du module (pas dynamique)
@@ -11,12 +16,14 @@ import { init as splideSuccessInit } from './modules/splide-success-stories.js'
 import { init as productScrollInit } from './modules/product-scroll.js'
 import { init as articlesSplideInit } from './modules/splide-other-articles.js'
 
-
+console.log('🔍 APRES IMPORTS - Splide:', typeof window.Splide)
 
 // Helper pour les logs (supprimés en production)
 const log = import.meta.env.DEV ? console.log : () => {}
 const warn = import.meta.env.DEV ? console.warn : () => {}
 const error = import.meta.env.DEV ? console.error : () => {}
+
+console.log('🔍 APRES HELPERS - Splide:', typeof window.Splide)
 
 const moduleMap = {
   'faq-accordion': faqAccordionInit,
@@ -29,6 +36,8 @@ const moduleMap = {
   'product-scroll': productScrollInit,
   'other-articles': articlesSplideInit
 }
+
+console.log('🔍 APRES MODULEMAP - Splide:', typeof window.Splide)
 
 function loadModule(name) {
   try {
@@ -47,6 +56,8 @@ function loadModule(name) {
 }
 
 function initApp() {
+  console.log('🔍 DEBUT INITAPP - Splide:', typeof window.Splide)
+  
   const page = document.body.dataset.page
   
   if (!page) {
@@ -63,6 +74,18 @@ function initApp() {
   
   log(`🎯 Page: ${page} | Modules: ${modules.join(', ')}`)
   modules.forEach(loadModule)
+  
+  console.log('🔍 FIN INITAPP - Splide:', typeof window.Splide)
 }
 
 document.addEventListener('DOMContentLoaded', initApp)
+
+// Vérification finale
+setTimeout(() => {
+  console.log('🔍 FIN SCRIPT - Splide:', typeof window.Splide)
+  if (typeof window.Splide === 'undefined' && originalSplide) {
+    console.log('🚨 Splide a été écrasé ! Restauration...')
+    window.Splide = originalSplide
+    console.log('🔧 Splide restauré:', typeof window.Splide)
+  }
+}, 0)
