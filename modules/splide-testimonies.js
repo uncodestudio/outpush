@@ -16,34 +16,44 @@ export function init() {
 
   testimonialSliders.forEach(slider => {
     new window.Splide(slider, {
-      // Configuration témoignages
-      type: 'loop',           // Loop infini
-      perPage: 3,            // 3 témoignages visibles
-      perMove: 1,            // Avance de 1 témoignage
-      gap: '1.5rem',         // Gap de 1.5rem
+      // Configuration témoignages - FIX LOOP
+      type: 'loop',           
+      perPage: 3,            
+      perMove: 1,            // ← IMPORTANT : toujours 1
+      gap: '1.5rem',         
       
       // Navigation
-      arrows: true,          // Flèches actives
-      pagination: false,     // Pas de pagination
+      arrows: true,          
+      pagination: false,     
+      
+      // Options CRITIQUES pour fix loop
+      clones: 3,             // ← Force le nombre de clones
+      cloneStatus: false,    // ← Désactive le status des clones
       
       // Responsive pour témoignages
       breakpoints: {
-        991: {               // Tablet
+        991: {               
           perPage: 2,
-          gap: '1rem'
+          gap: '1rem',
+          clones: 2          // ← Adapter aux clones
         },
-        767: {               // Mobile
-          perPage: 1.2,
-          gap: '0.5rem'
+        767: {               
+          perPage: 1,        // ← 1 au lieu de 1.2 pour loop
+          gap: '0.5rem',
+          clones: 1          // ← 1 clone sur mobile
         }
       },
       
       // Options témoignages
-      speed: 600,            // Vitesse transition
-      easing: 'ease',        // Courbe d'animation
-      autoWidth: false,      // Largeur automatique désactivée
-      focus: 'center',       // Focus au centre
-      trimSpace: false,      // Garde l'espace
+      speed: 600,            
+      easing: 'ease',        
+      autoWidth: false,      
+      focus: 'center',       
+      trimSpace: false,      
+      
+      // FIX pour le loop mobile
+      drag: true,            // ← Force le drag
+      snap: true,            // ← Snap aux positions
       
       // Accessibilité témoignages
       ariaLabel: 'Slider témoignages clients',
