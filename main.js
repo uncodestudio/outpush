@@ -15,6 +15,7 @@ import { init as textTranslateInit } from './modules/text-translate.js'
 import { init as splideSuccessInit } from './modules/splide-success-stories.js'
 import { init as productScrollInit } from './modules/product-scroll.js'
 import { init as articlesSplideInit } from './modules/splide-other-articles.js'
+import { init as faqFiltersInit } from './modules/faq-filters.js'
 
 console.log('🔍 APRES IMPORTS - Splide:', typeof window.Splide)
 
@@ -34,7 +35,8 @@ const moduleMap = {
   'text-translate': textTranslateInit,
   'splide-success': splideSuccessInit,
   'product-scroll': productScrollInit,
-  'other-articles': articlesSplideInit
+  'other-articles': articlesSplideInit,
+  'faq-filters': faqFiltersInit
 }
 
 console.log('🔍 APRES MODULEMAP - Splide:', typeof window.Splide)

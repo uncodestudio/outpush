@@ -1,17 +1,28 @@
-(function() {
-  'use strict';
+// modules/faq-filters.js - Version Module ES6
+export function init() {
+  console.log('✅ FAQ Filters - Initialisation')
   
   // 1. Trouver la collection list des filtres
   const filtersCollection = document.querySelector('[us-element="filters"]');
   const itemsList = document.querySelector('[us-list-element="list"]');
   
-  if (!filtersCollection || !itemsList) return;
+  if (!filtersCollection || !itemsList) {
+    console.log('❌ FAQ Filters - Éléments non trouvés')
+    return
+  }
+  
+  console.log('✅ FAQ Filters - Éléments trouvés')
   
   // 2. Trouver tous les boutons de filtre dans la collection
   const filterButtons = filtersCollection.querySelectorAll('[us-list-value]');
   const items = itemsList.querySelectorAll('[us-list-value]');
   
-  if (!filterButtons.length || !items.length) return;
+  if (!filterButtons.length || !items.length) {
+    console.log('❌ FAQ Filters - Boutons ou items manquants')
+    return
+  }
+  
+  console.log(`✅ FAQ Filters - ${filterButtons.length} boutons, ${items.length} items`)
   
   // Cache optimisé
   const buttonData = Array.from(filterButtons).map(btn => ({
@@ -27,13 +38,18 @@
   // Fonction de filtrage
   function filter(targetValue, activeButton) {
     const showAll = !targetValue || targetValue === 'all';
+    console.log(`🔧 FAQ Filters - Filtrage: ${targetValue || 'all'}`)
     
     // Filtrage des items
+    let visibleCount = 0
     for (let i = 0; i < itemData.length; i++) {
       const item = itemData[i];
       const show = showAll || item.value === targetValue;
       item.element.style.display = show ? '' : 'none';
+      if (show) visibleCount++
     }
+    
+    console.log(`✅ FAQ Filters - ${visibleCount} items visibles`)
     
     // Mise à jour des états des boutons filtres
     for (let i = 0; i < buttonData.length; i++) {
@@ -61,6 +77,7 @@
     
     e.preventDefault();
     const value = button.getAttribute('us-list-value') || '';
+    console.log(`🎯 FAQ Filters - Click sur: ${value}`)
     filter(value, button);
   });
   
@@ -105,7 +122,9 @@
   
   if (activeButton) {
     const value = activeButton.getAttribute('us-list-value') || '';
+    console.log(`🎯 FAQ Filters - Initialisation avec: ${value}`)
     filter(value, activeButton);
   }
   
-})();
+  console.log('✅ FAQ Filters - Module initialisé avec succès')
+}
