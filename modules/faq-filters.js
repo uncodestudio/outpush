@@ -1,4 +1,4 @@
-// modules/faq-filters.js - Version Module ES6
+// modules/faq-filters.js - Filtrage avec animations uniquement
 export function init() {
   console.log('✅ FAQ Filters - Initialisation')
   
@@ -24,6 +24,16 @@ export function init() {
   
   console.log(`✅ FAQ Filters - ${filterButtons.length} boutons, ${items.length} items`)
   
+  // 3. Setup GSAP si disponible
+  const hasGSAP = typeof window.gsap !== 'undefined'
+  if (hasGSAP) {
+    // Position initiale de la liste
+    gsap.set(itemsList, { opacity: 1, y: 0 })
+    console.log('✅ GSAP détecté - Animations activées')
+  } else {
+    console.log('⚠ GSAP manquant - Animations désactivées')
+  }
+  
   // Cache optimisé
   const buttonData = Array.from(filterButtons).map(btn => ({
     element: btn,
@@ -35,12 +45,36 @@ export function init() {
     value: item.getAttribute('us-list-value') || ''
   }));
   
-  // Fonction de filtrage
-  function filter(targetValue, activeButton) {
+  // Fonction d'animation de transition
+  function animateFilterChange() {
+    if (!hasGSAP) return Promise.resolve()
+    
+    console.log('🎬 Animation: hide instant → slide in')
+    
+    return new Promise((resolve) => {
+      // Hide instantané puis show animé
+      gsap.set(itemsList, { opacity: 0, y: 30 }) // Instantané
+      gsap.to(itemsList, { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.4, 
+        ease: "power2.out",
+        onComplete: resolve
+      }) // Animé
+    })
+  }
+  
+  // Fonction de filtrage avec animation
+  async function filter(targetValue, activeButton, animate = true) {
     const showAll = !targetValue || targetValue === 'all';
     console.log(`🔧 FAQ Filters - Filtrage: ${targetValue || 'all'}`)
     
-    // Filtrage des items
+    // Animation de sortie si GSAP disponible et demandée
+    if (animate && hasGSAP) {
+      await animateFilterChange()
+    }
+    
+    // Filtrage des items (pendant l'animation)
     let visibleCount = 0
     for (let i = 0; i < itemData.length; i++) {
       const item = itemData[i];
@@ -78,7 +112,7 @@ export function init() {
     e.preventDefault();
     const value = button.getAttribute('us-list-value') || '';
     console.log(`🎯 FAQ Filters - Click sur: ${value}`)
-    filter(value, button);
+    filter(value, button, true) // Avec animation
   });
   
   // Navigation clavier
@@ -105,7 +139,7 @@ export function init() {
       case ' ':
         e.preventDefault();
         const value = button.getAttribute('us-list-value') || '';
-        filter(value, button);
+        filter(value, button, true); // Avec animation
         return;
       default:
         return;
@@ -123,7 +157,7 @@ export function init() {
   if (activeButton) {
     const value = activeButton.getAttribute('us-list-value') || '';
     console.log(`🎯 FAQ Filters - Initialisation avec: ${value}`)
-    filter(value, activeButton);
+    filter(value, activeButton, false) // Sans animation à l'init
   }
   
   console.log('✅ FAQ Filters - Module initialisé avec succès')

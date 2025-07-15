@@ -1,75 +1,22 @@
-// Module FAQ Tabs + Accordion - Version optimisée avec animations
+// modules/faq-accordion.js - Accordéons uniquement
 export function init() {
-  console.log('✅ FAQ Tabs + Accordion initialisé')
-
-  // 1. Premier tab checked (immédiat)
-  initFirstTab()
+  console.log('✅ FAQ Accordion - Initialisation')
   
-  // 2. Accordions (attendre GSAP)
-  if (typeof gsap !== 'undefined') {
-    initAccordions()
-    initTabAnimations()
-  } else {
-    console.log('⚠ GSAP manquant pour les accordions')
-  }
-}
-
-// Premier tab checked + classe is-active forcée
-function initFirstTab() {
-  const tabsList = document.querySelector('.form_tabs-list')
-  if (!tabsList) return
-  
-  const firstRadio = tabsList.querySelector('input[type="radio"]')
-  if (!firstRadio) return
-  
-  // Check + trigger events
-  firstRadio.checked = true
-  firstRadio.dispatchEvent(new Event('change', { bubbles: true }))
-  
-  // Forcer la classe is-active sur le wrapper
-  const firstWrapper = firstRadio.closest('.radio_wrapper')
-  if (firstWrapper) {
-    firstWrapper.classList.add('is-active')
+  // Vérifier GSAP
+  const hasGSAP = typeof window.gsap !== 'undefined'
+  if (!hasGSAP) {
+    console.log('❌ GSAP manquant pour les accordéons')
+    return
   }
   
-  console.log('✅ Premier tab + is-active appliqués')
-}
-
-// Animations de changement de tabs
-function initTabAnimations() {
-  const faqList = document.querySelector('.faq_list')
-  if (!faqList) return
-  
-  // Position initiale de la liste
-  gsap.set(faqList, { opacity: 1, y: 0 })
-  
-  // Écouter les changements de tabs
-  document.addEventListener('change', (e) => {
-    // Vérifier si c'est un radio tab qui change
-    if (e.target.type === 'radio' && e.target.closest('.form_tabs-list')) {
-      animateTabChange(faqList)
-    }
-  })
-}
-
-// Animation de transition instantanée + slide in
-function animateTabChange(faqList) {
-  // Hide instantané puis show animé
-  gsap.set(faqList, { opacity: 0, y: 30 }) // Instantané
-  gsap.to(faqList, { 
-    opacity: 1, 
-    y: 0, 
-    duration: 0.4, 
-    ease: "power2.out" 
-  }) // Animé
-  
-  console.log('🎬 Animation tab: hide instant → slide in')
-}
-
-// Accordions optimisés
-function initAccordions() {
+  // Trouver tous les accordéons
   const accordions = document.querySelectorAll('.faq_accordion')
-  if (!accordions.length) return
+  if (!accordions.length) {
+    console.log('❌ Aucun accordéon .faq_accordion trouvé')
+    return
+  }
+
+  console.log(`✅ Accordions trouvés: ${accordions.length}`)
 
   // Setup initial pour tous (batch operation)
   const answers = []
@@ -80,7 +27,10 @@ function initAccordions() {
     const answer = accordion.querySelector('.faq_answer')
     const icon = accordion.querySelector('.faq_icon')
     
-    if (!question || !answer) return
+    if (!question || !answer) {
+      console.log('⚠ Accordéon incomplet ignoré')
+      return
+    }
     
     // Collecter pour batch GSAP
     answers.push(answer)
@@ -89,33 +39,101 @@ function initAccordions() {
     // Accessibilité
     question.setAttribute('aria-expanded', 'false')
     answer.setAttribute('aria-hidden', 'true')
+    question.setAttribute('tabindex', '0') // Navigation clavier
     
-    // Event listener optimisé
+    // Event listeners
     question.addEventListener('click', () => toggleAccordion(accordion, answer, icon, question))
+    
+    // Support navigation clavier
+    question.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        toggleAccordion(accordion, answer, icon, question)
+      }
+    })
   })
   
   // Batch GSAP initial (plus performant)
   gsap.set(answers, { height: 0, overflow: 'hidden' })
   gsap.set(icons, { rotate: 0 })
+  
+  console.log('✅ FAQ Accordion - Module initialisé avec succès')
 }
 
 // Toggle accordion optimisé
 function toggleAccordion(accordion, answer, icon, question) {
   const isOpen = accordion.classList.contains('is-open')
   
+  console.log(`🔧 Accordion ${isOpen ? 'fermeture' : 'ouverture'}`)
+  
   if (isOpen) {
     // Fermer
     accordion.classList.remove('is-open')
-    gsap.to(answer, { height: 0, duration: 0.3 })
-    if (icon) gsap.to(icon, { rotate: 0, duration: 0.3 })
+    gsap.to(answer, { 
+      height: 0, 
+      duration: 0.3,
+      ease: "power2.inOut"
+    })
+    if (icon) {
+      gsap.to(icon, { 
+        rotate: 0, 
+        duration: 0.3,
+        ease: "power2.inOut"
+      })
+    }
     question.setAttribute('aria-expanded', 'false')
     answer.setAttribute('aria-hidden', 'true')
   } else {
+    // Fermer tous les autres accordéons (optionnel)
+    closeOtherAccordions(accordion)
+    
     // Ouvrir
     accordion.classList.add('is-open')
-    gsap.to(answer, { height: 'auto', duration: 0.4 })
-    if (icon) gsap.to(icon, { rotate: -180, duration: 0.4 })
+    gsap.to(answer, { 
+      height: 'auto', 
+      duration: 0.4,
+      ease: "power2.out"
+    })
+    if (icon) {
+      gsap.to(icon, { 
+        rotate: -180, 
+        duration: 0.4,
+        ease: "power2.out"
+      })
+    }
     question.setAttribute('aria-expanded', 'true')
     answer.setAttribute('aria-hidden', 'false')
   }
+}
+
+// Fermer les autres accordéons (comportement exclusif)
+function closeOtherAccordions(currentAccordion) {
+  const allAccordions = document.querySelectorAll('.faq_accordion.is-open')
+  
+  allAccordions.forEach(accordion => {
+    if (accordion === currentAccordion) return
+    
+    const question = accordion.querySelector('.faq_question')
+    const answer = accordion.querySelector('.faq_answer')
+    const icon = accordion.querySelector('.faq_icon')
+    
+    if (!question || !answer) return
+    
+    // Fermer
+    accordion.classList.remove('is-open')
+    gsap.to(answer, { 
+      height: 0, 
+      duration: 0.3,
+      ease: "power2.inOut"
+    })
+    if (icon) {
+      gsap.to(icon, { 
+        rotate: 0, 
+        duration: 0.3,
+        ease: "power2.inOut"
+      })
+    }
+    question.setAttribute('aria-expanded', 'false')
+    answer.setAttribute('aria-hidden', 'true')
+  })
 }
