@@ -84,9 +84,6 @@ function toggleAccordion(accordion, answer, icon, question) {
     question.setAttribute('aria-expanded', 'false')
     answer.setAttribute('aria-hidden', 'true')
   } else {
-    // Fermer tous les autres accordéons (optionnel)
-    closeOtherAccordions(accordion)
-    
     // Ouvrir
     accordion.classList.add('is-open')
     gsap.to(answer, { 
@@ -104,36 +101,4 @@ function toggleAccordion(accordion, answer, icon, question) {
     question.setAttribute('aria-expanded', 'true')
     answer.setAttribute('aria-hidden', 'false')
   }
-}
-
-// Fermer les autres accordéons (comportement exclusif)
-function closeOtherAccordions(currentAccordion) {
-  const allAccordions = document.querySelectorAll('.faq_accordion.is-open')
-  
-  allAccordions.forEach(accordion => {
-    if (accordion === currentAccordion) return
-    
-    const question = accordion.querySelector('.faq_question')
-    const answer = accordion.querySelector('.faq_answer')
-    const icon = accordion.querySelector('.faq_icon')
-    
-    if (!question || !answer) return
-    
-    // Fermer
-    accordion.classList.remove('is-open')
-    gsap.to(answer, { 
-      height: 0, 
-      duration: 0.3,
-      ease: "power2.inOut"
-    })
-    if (icon) {
-      gsap.to(icon, { 
-        rotate: 0, 
-        duration: 0.3,
-        ease: "power2.inOut"
-      })
-    }
-    question.setAttribute('aria-expanded', 'false')
-    answer.setAttribute('aria-hidden', 'true')
-  })
 }

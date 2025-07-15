@@ -49,18 +49,30 @@ export function init() {
   function animateFilterChange() {
     if (!hasGSAP) return Promise.resolve()
     
-    console.log('🎬 Animation: hide instant → slide in')
+    console.log('🎬 Animation: fade out → changement → slide in')
     
     return new Promise((resolve) => {
-      // Hide instantané puis show animé
-      gsap.set(itemsList, { opacity: 0, y: 30 }) // Instantané
+      // 1. FADE OUT + SLIDE UP (disparition)
       gsap.to(itemsList, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.4, 
-        ease: "power2.out",
-        onComplete: resolve
-      }) // Animé
+        opacity: 0, 
+        y: -20, 
+        duration: 0.2, 
+        ease: "power2.in",
+        onComplete: () => {
+          // 2. Le contenu changera ici (dans filter())
+          // 3. SLIDE IN + FADE IN (apparition)
+          gsap.fromTo(itemsList, 
+            { opacity: 0, y: 30 }, // From
+            { 
+              opacity: 1, 
+              y: 0, 
+              duration: 0.4, 
+              ease: "power2.out",
+              onComplete: resolve
+            }
+          )
+        }
+      })
     })
   }
   
@@ -69,12 +81,21 @@ export function init() {
     const showAll = !targetValue || targetValue === 'all';
     console.log(`🔧 FAQ Filters - Filtrage: ${targetValue || 'all'}`)
     
-    // Animation de sortie si GSAP disponible et demandée
+    // Animation de transition si demandée
     if (animate && hasGSAP) {
-      await animateFilterChange()
+      // 1. Fade out + slide up
+      await new Promise((resolve) => {
+        gsap.to(itemsList, { 
+          opacity: 0, 
+          y: -20, 
+          duration: 0.2, 
+          ease: "power2.in",
+          onComplete: resolve
+        })
+      })
     }
     
-    // Filtrage des items (pendant l'animation)
+    // 2. Filtrage des items (pendant que c'est invisible)
     let visibleCount = 0
     for (let i = 0; i < itemData.length; i++) {
       const item = itemData[i];
@@ -101,6 +122,19 @@ export function init() {
         btn.removeAttribute('data-checked');
         btn.setAttribute('aria-pressed', 'false');
       }
+    }
+    
+    // 3. Slide in + fade in (après le changement)
+    if (animate && hasGSAP) {
+      gsap.fromTo(itemsList, 
+        { opacity: 0, y: 30 }, // From
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 0.4, 
+          ease: "power2.out"
+        }
+      )
     }
   }
   
